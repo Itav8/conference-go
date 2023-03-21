@@ -22,8 +22,13 @@ class Attendee(models.Model):
     def __str__(self):
         return self.name
 
+    def create_badge(self):
+        pass
+
     def get_api_url(self):
         return reverse("api_show_attendee", kwargs={"id": self.id})
+
+
 
 
 class Badge(models.Model):
