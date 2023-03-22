@@ -36,7 +36,7 @@ class ModelEncoder(DateEncoder, QuerySetEncoder, JSONEncoder):
             if hasattr(o, "get_api_url"):
                 # then add its return value to the dictionary with the key "href"
                 d["href"] = o.get_api_url()
-            #     * for each name in the properties list
+            # * for each name in the properties list
             for property in self.properties:
                 # get the value of that property from the model instance
                 # given just the property name
@@ -50,7 +50,7 @@ class ModelEncoder(DateEncoder, QuerySetEncoder, JSONEncoder):
                 # put it into the dictionary with that property name as the key
                 d[property] = value
             d.update(self.get_extra_data(o))
-            #     * return the dictionary
+            # * return the dictionary
             return d
         # otherwise,
         else:

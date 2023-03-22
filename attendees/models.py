@@ -29,8 +29,6 @@ class Attendee(models.Model):
         return reverse("api_show_attendee", kwargs={"id": self.id})
 
 
-
-
 class Badge(models.Model):
     """
     The Badge model represents the badge an attendee gets to
