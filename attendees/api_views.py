@@ -1,4 +1,3 @@
-from socket import AI_ALL
 from django.http import JsonResponse
 import json
 from common.json import ModelEncoder
