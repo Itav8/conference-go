@@ -5,6 +5,7 @@ from .models import Conference, Location, State
 from django.views.decorators.http import require_http_methods
 import requests
 from .keys import PEXELS_API_KEY
+from events.acl import get_weather_data
 
 
 class LocationListEncoder(ModelEncoder):
@@ -125,8 +126,13 @@ def api_show_conference(request, id):
     """
     if request.method == "GET":
         conference = Conference.objects.get(id=id)
+        weather = get_weather_data(
+            conference.location.city, conference.location.state.abbreviation
+        )
         return JsonResponse(
-            conference, encoder=ConferenceDetailEncoder, safe=False
+            {"conference": conference, "weather": weather},
+            encoder=ConferenceDetailEncoder,
+            safe=False,
         )
     elif request.method == "DELETE":
         count, _ = Conference.objects.filter(id=id).delete()
