@@ -3,6 +3,8 @@ from django.http import JsonResponse
 from common.json import ModelEncoder
 from .models import Conference, Location, State
 from django.views.decorators.http import require_http_methods
+import requests
+from .keys import PEXELS_API_KEY
 
 
 class LocationListEncoder(ModelEncoder):
@@ -18,6 +20,7 @@ class LocationDetailEncoder(ModelEncoder):
         "room_count",
         "created",
         "updated",
+        "picture_url",
     ]
 
     def get_extra_data(self, o):
@@ -178,7 +181,26 @@ def api_list_locations(request):
                 status=400,
             )
 
-        location = Location.objects.create(**content)
+        # Make third-party API request here, before we create the new Location
+        try:
+            url = "https://api.pexels.com/v1/search"
+            headers = {"Authorization": PEXELS_API_KEY}
+
+            if "city" not in content:
+                raise Exception
+
+            params = {"query": content["city"], "per_page": 1}
+            r = requests.get(url, headers=headers, params=params)
+            response = r.json()
+            picture_url = response["photos"][0]["url"]
+        except Exception:
+            return JsonResponse(
+                {"message": "No city provided"},
+                status=400,
+            )
+
+        location = Location.objects.create(**content, picture_url=picture_url)
+
         return JsonResponse(
             location,
             encoder=LocationDetailEncoder,
