@@ -34,4 +34,3 @@ def get_weather_data(city, state):
         "description": content["weather"][0]["description"],
         "temp": content["main"]["temp"],
     }
-
