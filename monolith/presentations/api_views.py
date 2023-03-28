@@ -5,6 +5,7 @@ from .models import Presentation
 from events.models import Conference
 from django.views.decorators.http import require_http_methods
 import json
+import pika
 
 
 class PresentationDetailEncoder(ModelEncoder):
@@ -122,3 +123,57 @@ def api_show_presentation(request, id):
         return JsonResponse(
             {"presentation": presentation}, encoder=PresentationDetailEncoder
         )
+
+
+@require_http_methods(["PUT"])
+def api_approve_presentation(request, pk):
+    presentation = Presentation.objects.get(id=pk)
+    presentation.approve()
+    parameters = pika.ConnectionParameters(host="rabbitmq")
+    connection = pika.BlockingConnection(parameters)
+    channel = connection.channel()
+    channel.queue_declare(queue="presentation_approvals")
+    channel.basic_publish(
+        exchange="",
+        routing_key="presentation_approvals",
+        body=json.dumps(
+            {
+                "presenter_name": "Marigold Mackenzie",
+                "presenter_email": "mm@mm.net",
+                "title": "My Awesome Sauce Presentation",
+            }
+        ),
+    )
+    connection.close()
+    return JsonResponse(
+        presentation,
+        encoder=PresentationDetailEncoder,
+        safe=False,
+    )
+
+
+@require_http_methods(["PUT"])
+def api_reject_presentation(request, pk):
+    presentation = Presentation.objects.get(id=pk)
+    presentation.reject()
+    parameters = pika.ConnectionParameters(host="rabbitmq")
+    connection = pika.BlockingConnection(parameters)
+    channel = connection.channel()
+    channel.queue_declare(queue="presentation_rejections")
+    channel.basic_publish(
+        exchange="",
+        routing_key="presentation_rejections",
+        body=json.dumps(
+            {
+                "presenter_name": "Marigold Mackenzie",
+                "presenter_email": "mm@mm.net",
+                "title": "My Awesome Sauce Presentation",
+            }
+        ),
+    )
+    connection.close()
+    return JsonResponse(
+        presentation,
+        encoder=PresentationDetailEncoder,
+        safe=False,
+    )
