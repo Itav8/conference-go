@@ -20,12 +20,12 @@ urlpatterns = [
         name="api_show_presentation",
     ),
     path(
-        "presentations/<int:pk>/approval/",
+        "presentations/<int:id>/approval/",
         api_approve_presentation,
         name="api_approve_presentation",
     ),
     path(
-        "presentations/<int:pk>/rejection/",
+        "presentations/<int:id>/rejection/",
         api_reject_presentation,
         name="api_reject_presentation",
     ),

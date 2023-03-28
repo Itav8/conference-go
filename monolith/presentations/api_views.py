@@ -126,25 +126,28 @@ def api_show_presentation(request, id):
 
 
 @require_http_methods(["PUT"])
-def api_approve_presentation(request, pk):
-    presentation = Presentation.objects.get(id=pk)
+def api_approve_presentation(request, id):
+    presentation = Presentation.objects.get(id=id)
     presentation.approve()
+
+    body = {
+        "presenter_name": getattr(presentation, "presenter_name"),
+        "title": getattr(presentation, "title"),
+    }
+
     parameters = pika.ConnectionParameters(host="rabbitmq")
     connection = pika.BlockingConnection(parameters)
+
     channel = connection.channel()
     channel.queue_declare(queue="presentation_approvals")
     channel.basic_publish(
         exchange="",
         routing_key="presentation_approvals",
-        body=json.dumps(
-            {
-                "presenter_name": "Marigold Mackenzie",
-                "presenter_email": "mm@mm.net",
-                "title": "My Awesome Sauce Presentation",
-            }
-        ),
+        body=json.dumps(body),
     )
+
     connection.close()
+
     return JsonResponse(
         presentation,
         encoder=PresentationDetailEncoder,
@@ -153,8 +156,8 @@ def api_approve_presentation(request, pk):
 
 
 @require_http_methods(["PUT"])
-def api_reject_presentation(request, pk):
-    presentation = Presentation.objects.get(id=pk)
+def api_reject_presentation(request, id):
+    presentation = Presentation.objects.get(id=id)
     presentation.reject()
     parameters = pika.ConnectionParameters(host="rabbitmq")
     connection = pika.BlockingConnection(parameters)
@@ -163,13 +166,7 @@ def api_reject_presentation(request, pk):
     channel.basic_publish(
         exchange="",
         routing_key="presentation_rejections",
-        body=json.dumps(
-            {
-                "presenter_name": "Marigold Mackenzie",
-                "presenter_email": "mm@mm.net",
-                "title": "My Awesome Sauce Presentation",
-            }
-        ),
+        body=json.dumps("..."),
     )
     connection.close()
     return JsonResponse(
