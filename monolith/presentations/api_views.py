@@ -133,11 +133,11 @@ def api_approve_presentation(request, id):
     body = {
         "presenter_name": getattr(presentation, "presenter_name"),
         "title": getattr(presentation, "title"),
+        "presenter_email": getattr(presentation, "presenter_email"),
     }
 
     parameters = pika.ConnectionParameters(host="rabbitmq")
     connection = pika.BlockingConnection(parameters)
-
     channel = connection.channel()
     channel.queue_declare(queue="presentation_approvals")
     channel.basic_publish(
@@ -145,7 +145,6 @@ def api_approve_presentation(request, id):
         routing_key="presentation_approvals",
         body=json.dumps(body),
     )
-
     connection.close()
 
     return JsonResponse(
@@ -159,6 +158,13 @@ def api_approve_presentation(request, id):
 def api_reject_presentation(request, id):
     presentation = Presentation.objects.get(id=id)
     presentation.reject()
+
+    body = {
+        "presenter_name": getattr(presentation, "presenter_name"),
+        "title": getattr(presentation, "title"),
+        "presenter_email": getattr(presentation, "presenter_email"),
+    }
+
     parameters = pika.ConnectionParameters(host="rabbitmq")
     connection = pika.BlockingConnection(parameters)
     channel = connection.channel()
@@ -166,9 +172,10 @@ def api_reject_presentation(request, id):
     channel.basic_publish(
         exchange="",
         routing_key="presentation_rejections",
-        body=json.dumps("..."),
+        body=json.dumps(body),
     )
     connection.close()
+
     return JsonResponse(
         presentation,
         encoder=PresentationDetailEncoder,

@@ -8,5 +8,6 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 # We install the dependencies using pip
 RUN pip install -r requirements.txt
-# We run the Django development server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# We run on the consumer.py
+# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "presentation_mailer/consumer.py"]
