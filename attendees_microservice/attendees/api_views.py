@@ -5,7 +5,7 @@ from django.views.decorators.http import require_http_methods
 
 # from events.api_views import ConferenceListEncoder
 # from events.models import Conference
-from .models import Attendee, ConferenceVO
+from .models import AccountVO, Attendee, ConferenceVO
 
 
 class ConferenceVODetailEncoder(ModelEncoder):
@@ -23,6 +23,15 @@ class AttendeeDetailEncoder(ModelEncoder):
         "conference",
     ]
     encoders = {"conference": ConferenceVODetailEncoder()}
+
+    def get_extra_data(self, o):
+        # Get the count of AccountVO objects with email equal to o.email
+        account_count = AccountVO.objects.filter(
+            email=getattr(o, "email")
+        ).count()
+        # Return a dictionary with "has_account": True if count > 0
+        # Otherwise, return a dictionary with "has_account": False
+        return {"has_account": account_count > 0}
 
 
 class AttendeeListEncoder(ModelEncoder):
@@ -61,7 +70,7 @@ def api_list_attendees(request, conference_vo_id=None):
         content = json.loads(request.body)
         # get the Conference object and put it in the content dictionary
         try:
-            conference_href = f'/api/conferences/{conference_vo_id}/'
+            conference_href = f"/api/conferences/{conference_vo_id}/"
             conference = ConferenceVO.objects.get(import_href=conference_href)
             content["conference"] = conference
         except ConferenceVO.DoesNotExist:

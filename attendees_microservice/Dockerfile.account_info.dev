@@ -1,0 +1,13 @@
+# select base image
+FROM python:3
+# We set an environment variable so that Python prints things immediately
+ENV PYTHONUNBUFFERED 1
+# set the work directory to app
+WORKDIR /app
+# copy the requirements.txt into the image
+COPY requirements.txt requirements.txt
+# install python requirements from requirements.txt
+RUN pip install -r requirements.txt
+# run python unbuffered mode and command with the new
+# RUN ls attendees
+CMD python attendees/account_info_consumer.py

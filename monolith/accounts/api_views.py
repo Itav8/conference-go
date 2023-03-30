@@ -98,6 +98,7 @@ def api_list_accounts(request):
             safe=False,
         )
         response.status_code = status_code
+
         return response
 
 
